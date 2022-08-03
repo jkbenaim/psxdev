@@ -1,0 +1,17 @@
+io map, in bar0:
+	from 0:
+		db bootparam
+			bit 0: 0= reset(?), 1= run
+			bit 4: 0= NTSC, 1= PAL
+		db stat
+			interrupt control?
+		db dipsw
+			bit 3: 0= flashboot, 1= eprom boot
+	from 0x800:
+		dd field_800
+	from 0xc00:
+		about 900 bytes of buffer for writing deci packets, host->board
+	from 0xffe:
+		db field_FFE
+		db field_FFF
+			write 01h here to ask board to process packed written to C00
