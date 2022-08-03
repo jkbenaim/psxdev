@@ -1,1 +1,3 @@
-linux kernel module for DTL-H2500 playstation development pci board. nothing works. do not use
+linux kernel module for DTL-H2500 playstation development pci board. nothing works. do not use.
+
+using linux 5.10 as a base.
