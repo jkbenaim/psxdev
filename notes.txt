@@ -1,6 +1,6 @@
 io map, in bar0:
 	from 0:
-		db bootparam
+		db bootp
 			bit 0: 0= reset(?), 1= run
 			bit 4: 0= NTSC, 1= PAL
 		db stat

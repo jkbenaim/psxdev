@@ -1,1 +1,1 @@
-obj-m := psxdev.o
+obj-m := dtlh2500.o
