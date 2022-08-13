@@ -5,7 +5,7 @@
 MODULE_AUTHOR("Jason Benaim");
 MODULE_DESCRIPTION("Driver for Sony DTL-H2500 PlayStation development card");
 MODULE_LICENSE("Dual BSD/GPL");
-#define DRIVER_NAME "psxdev"
+#define DRIVER_NAME "dtlh2500"
 
 #ifndef PCI_DEVICE_ID_SONY_DTLH2500
 #define PCI_DEVICE_ID_SONY_DTLH2500	0x8004
@@ -42,13 +42,13 @@ struct regs_s {
 	volatile uint8_t field_FFF;
 } __attribute__((packed));
 
-static const struct pci_device_id psxdev_pci_tbl[] = {
+static const struct pci_device_id dtlh2500_pci_tbl[] = {
 	{ PCI_VDEVICE(SONY, PCI_DEVICE_ID_SONY_DTLH2500) },
 	{ 0 }
 };
-MODULE_DEVICE_TABLE(pci, psxdev_pci_tbl);
+MODULE_DEVICE_TABLE(pci, dtlh2500_pci_tbl);
 
-static struct psxdev_board {
+static struct dtlh2500_board {
 	unsigned bus;
 	unsigned devfn;
 	void *regmap;
@@ -238,7 +238,7 @@ ssize_t fff_store(struct device *dev, struct device_attribute *attr,
 	return count;
 }
 
-void psxdev_reset(void)
+void dtlh2500_reset(void)
 {
 	int i;
 	for (i = 0; i < HOST_IF_BUFSIZE; i++) {
@@ -265,7 +265,7 @@ ssize_t preset_store(struct device *dev, struct device_attribute *attr,
 	if ((rc != 1) || (val != 1))
 		return -EINVAL;
 	
-	psxdev_reset();
+	dtlh2500_reset();
 
 	return count;
 }
@@ -293,7 +293,7 @@ static struct device_attribute board_attrs[] = {
 	__ATTR_RO(zeropage),
 };
 
-static irqreturn_t psxdev_interrupt(int irq, void *dev_id)
+static irqreturn_t dtlh2500_interrupt(int irq, void *dev_id)
 {
 	uint8_t temp;
 	printk("interrupt, [0]=%02xh, [1]=%02xh, [2]=%02xh\n",
@@ -312,7 +312,7 @@ static irqreturn_t psxdev_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int psxdev_probe(struct pci_dev *pdev, const struct pci_device_id *id)
+static int dtlh2500_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 {
 	__label__ err_regions, err_iomap, err_irq, err_attrs;
 	int rc;
@@ -336,13 +336,13 @@ static int psxdev_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 		goto err_iomap;
 	}
 
-	rc = request_irq(pdev->irq, psxdev_interrupt, 0, DRIVER_NAME, pdev);
+	rc = request_irq(pdev->irq, dtlh2500_interrupt, 0, DRIVER_NAME, pdev);
 	if (rc) {
 		printk("failed requesting IRQ%d\n", pdev->irq);
 		goto err_irq;
 	}
 
-	psxdev_reset();
+	dtlh2500_reset();
 
 	printk("bootp: %d\n", ioread8(board.regmap + PSX_BOOTP));
 	printk("stat: %d\n", ioread8(board.regmap + PSX_STAT));
@@ -373,7 +373,7 @@ err_regions:
 	return rc;
 }
 
-static void psxdev_remove(struct pci_dev *pdev)
+static void dtlh2500_remove(struct pci_dev *pdev)
 {
 	int i;
 	struct device_attribute *dev_attr;
@@ -389,35 +389,35 @@ static void psxdev_remove(struct pci_dev *pdev)
 	pci_disable_device(pdev);
 }
 
-static struct pci_driver psxdev_driver = {
+static struct pci_driver dtlh2500_driver = {
 	.name		= DRIVER_NAME,
-	.id_table	= psxdev_pci_tbl,
-	.probe		= psxdev_probe,
-	.remove		= psxdev_remove,
+	.id_table	= dtlh2500_pci_tbl,
+	.probe		= dtlh2500_probe,
+	.remove		= dtlh2500_remove,
 	.driver = {
 		.owner	= THIS_MODULE,
 	},
 };
 
-static int __init psxdev_init(void)
+static int __init dtlh2500_init(void)
 {
 	int rc;
 	printk("hello world\n");
 
-	rc = pci_register_driver(&psxdev_driver);
+	rc = pci_register_driver(&dtlh2500_driver);
 	if (rc)
 		return rc;
 	
 	return 0;
 }
 
-static void __exit psxdev_exit(void)
+static void __exit dtlh2500_exit(void)
 {
 	printk("goodbye world\n");
 	
-	pci_unregister_driver(&psxdev_driver);
+	pci_unregister_driver(&dtlh2500_driver);
 }
 
-module_init(psxdev_init);
-module_exit(psxdev_exit);
+module_init(dtlh2500_init);
+module_exit(dtlh2500_exit);
 
